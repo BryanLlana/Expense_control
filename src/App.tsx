@@ -2,7 +2,6 @@ import BudgetForm from "./components/BudgetForm"
 import Header from "./components/Header"
 
 function App() {
-
   return (
     <>
       <Header />
