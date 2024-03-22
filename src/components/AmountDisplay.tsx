@@ -1,14 +1,14 @@
 import { formatNumberToPen } from "../helpers"
 
 type Props = {
-  label: string,
+  label?: string,
   amount: number
 }
 
 const AmountDisplay = ({label, amount}: Props) => {
   return (
     <p className="text-2xl text-blue-600 font-bold">
-      {label}:<span className="font-black text-black"> {formatNumberToPen(amount)}</span>
+      {label && `${label}:`}<span className="font-black text-black"> {formatNumberToPen(amount)}</span>
     </p>
   )
 }

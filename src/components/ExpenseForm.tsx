@@ -5,17 +5,19 @@ import 'react-date-picker/dist/DatePicker.css'
 import React, { useState } from "react"
 import { Expense, Value } from "../types"
 import ErrorMessage from "./ErrorMessage"
+import { useBudgetContext } from "../hooks/useBudgetContext"
 
 const initialState: Expense = {
   expenseName: '',
   amount: 0,
-  category: '0',
+  category: '',
   date: new Date()
 }
 
 const ExpenseForm = () => {
   const [expense, setExpense] = useState<Expense>(initialState)
   const [error, setError] = useState('')
+  const { dispatch } = useBudgetContext()
 
   const handleChangeDate = (date: Value) => {
     setExpense({
@@ -42,7 +44,7 @@ const ExpenseForm = () => {
       return
     }
 
-
+    dispatch({ type: 'add-expense', payload: { expense }})
   }
 
   return (
@@ -90,7 +92,7 @@ const ExpenseForm = () => {
           defaultValue={expense.category}
           onChange={handleChange}
         >
-          <option value="0" disabled>--Seleccione--</option>
+          <option value="" disabled>--Seleccione--</option>
           {categories.map(category => (
             <option key={category.id} value={category.id}>{category.name}</option>
           ))}
