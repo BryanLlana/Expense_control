@@ -35,7 +35,7 @@ const ExpenseDetail = ({ expense }: Props) => {
   return (
     <SwipeableList>
       <SwipeableListItem maxSwipe={1} leadingActions={leadingActions()} trailingActions={trailingActions()}>
-        <div className="bg-white shadow-lg p-10 w-full border-b border-gray-200 flex gap-5 items-center">
+        <div className="bg-white shadow-lg py-10 w-full border-b border-gray-200 flex gap-5 items-center">
           <div>
             <img src={`/img/icono_${categoryInfo?.icon}.svg`} alt="Icono Gasto" className="w-20" />
           </div>
