@@ -2,7 +2,7 @@ import { categories } from "../data"
 import DatePicker from 'react-date-picker'
 import 'react-calendar/dist/Calendar.css'
 import 'react-date-picker/dist/DatePicker.css'
-import React, { useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Expense, Value } from "../types"
 import ErrorMessage from "./ErrorMessage"
 import { useBudgetContext } from "../hooks/useBudgetContext"
@@ -17,7 +17,20 @@ const initialState: Expense = {
 const ExpenseForm = () => {
   const [expense, setExpense] = useState<Expense>(initialState)
   const [error, setError] = useState('')
-  const { dispatch } = useBudgetContext()
+  const [previousAmount, setPreviousAmount] = useState(0)
+  const { state, dispatch } = useBudgetContext()
+
+  const spent = useMemo(() => state.expenses.reduce((total, expense) => total + expense.amount, 0), [state.expenses])
+  const available = useMemo(() => state.budget - spent, [state.expenses])
+
+  useEffect(() => {
+    if (state.editingId) {
+      const editingExpense = state.expenses.find(expense => expense.id === state.editingId)
+      const { id, ...values } = editingExpense!
+      setExpense(values)
+      setPreviousAmount(editingExpense?.amount!)
+    }
+  }, [state.editingId])
 
   const handleChangeDate = (date: Value) => {
     setExpense({
@@ -44,13 +57,30 @@ const ExpenseForm = () => {
       return
     }
 
-    dispatch({ type: 'add-expense', payload: { expense }})
+    if ((expense.amount - previousAmount) > available) {
+      setError('Saldo no disponible')
+      setTimeout(() => {
+        setError('')
+      }, 3000)
+      return
+    }
+
+    if (state.editingId) {
+      dispatch({ type: 'update-expense', payload: {
+        expense: {
+          ...expense,
+          id: state.editingId
+        }
+      }})
+    } else {
+      dispatch({ type: 'add-expense', payload: { expense }})
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <legend className="text-center text-2xl font-black border-b-4 border-blue-500 py-2">
-        Nuevo Gasto
+        { state.editingId ? 'Editar Gasto' : 'Nuevo Gasto'}
       </legend>
 
       {error && (<ErrorMessage>{error}</ErrorMessage>)}
@@ -94,7 +124,11 @@ const ExpenseForm = () => {
         >
           <option value="" disabled>--Seleccione--</option>
           {categories.map(category => (
-            <option key={category.id} value={category.id}>{category.name}</option>
+            <option
+              key={category.id}
+              value={category.id}
+              selected={category.id === expense.category}
+            >{category.name}</option>
           ))}
         </select>
       </div>
@@ -102,7 +136,7 @@ const ExpenseForm = () => {
       <input
         type="submit"
         className="bg-blue-600 cursor-pointer w-full p-2 text-white font-bold rounded-lg"
-        value='Guardar Gasto'
+        value={state.editingId ? 'Guardar Cambios' : 'Guardar Gasto'}
       />
     </form>
   )
